@@ -1,3 +1,5 @@
+# Based off of other themes from oh-my-zsh
+
 local return_code="%(?..%{$fg[red]%}%? ↵%{$reset_color%})"
 
 

@@ -1,6 +1,7 @@
 wheel
-ansible==2.8.1
+ansible==2.8.2
 pywinrm==0.3.0
 pykerberos==1.2.1
 requests_kerberos==0.12.0
 requests-ntlm==1.1.0
+awscli==1.16.224

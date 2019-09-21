@@ -1,51 +1,46 @@
-FROM alpine:3.10.1
+FROM fedora:30 AS builder
+WORKDIR /root/
 
-RUN apk update \
-    && apk upgrade \
-    && apk add zsh \
-               python3 \
+RUN dnf -y install unzip golang
+
+RUN mkdir /root/go \
+    && export GO111MODULE=on \
+    && go get github.com/gruntwork-io/terragrunt@v0.19.21 \
+    && go get github.com/hashicorp/terraform@v0.12.7
+
+RUN cd /root/ \
+    && curl -O https://cache.agilebits.com/dist/1P/op/pkg/v0.5.6-003/op_linux_amd64_v0.5.6-003.zip \
+    && unzip op_linux_amd64_v0.5.6-003.zip
+
+FROM fedora:30
+RUN dnf -y update \
+    && dnf -y install zsh \
                openssh \
                git \
                gcc \
-               python3-dev \
-               krb5-dev \
-               krb5 \
+               python3-devel \
+               krb5-devel \
+               krb5-workstation \
+               openssl-devel \
                unzip \
-               curl \
-               musl-dev \
-               libffi-dev \
-               openssl-dev \
-               procps \
-               vim \
-               util-linux
+               iputils \
+               golang \
+               jq \
+               bind-dnssec-utils \
+               bind-utils \
+    && dnf clean all
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
-RUN cd /tmp/ \
-    && curl -O https://releases.hashicorp.com/terraform/0.12.1/terraform_0.12.1_linux_amd64.zip \
-    && unzip terraform_0.12.1_linux_amd64.zip \
-    && mv terraform /usr/local/bin/ \
-    && rm terraform_0.12.1_linux_amd64.zip
+RUN mkdir /go /go/bin /workspace /root/.ssh/
+COPY --from=builder /root/go/bin/* /root/go/bin/
+COPY --from=builder /root/op /usr/local/bin/
 
-RUN cd /tmp/ \
-    && curl -O https://cache.agilebits.com/dist/1P/op/pkg/v0.5.6-003/op_linux_amd64_v0.5.6-003.zip \
-    && unzip op_linux_amd64_v0.5.6-003.zip \
-    && mv op /usr/local/bin/ \
-    && rm ./op*
-
-RUN mkdir /workspace /root/.ssh/
 WORKDIR /workspace
 
 COPY requirements.txt /workspace/
 
 RUN pip3 install -r requirements.txt && rm requirements.txt
-
-RUN apk del python3-dev \
-            krb5-dev \
-            musl-dev \
-            libffi-dev \
-            openssl-dev \
-            gcc
 
 COPY workspace.zsh-theme /root/.oh-my-zsh/themes/
 COPY zshrc /root/.zshrc

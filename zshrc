@@ -14,6 +14,10 @@ source $ZSH/oh-my-zsh.sh
 unsetopt inc_append_history
 unsetopt share_history
 
+export GOPATH=/root/go
+export PATH=$PATH:$GOPATH/bin
+export GO111MODULE=on
+
 alias vi=vim
 
 ssh-add -l &>/dev/null
