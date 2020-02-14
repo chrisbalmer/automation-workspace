@@ -4,14 +4,31 @@ WORKDIR /root/
 RUN yum -y install epel-release
 RUN yum -y install unzip golang
 
-RUN mkdir /root/go \
-    && export GO111MODULE=on \
-    && go get github.com/gruntwork-io/terragrunt@v0.21.10 \
-    && go get github.com/hashicorp/terraform@v0.12.18
+
+
+RUN mkdir /root/go && \
+    export GO111MODULE=on && \
+    go get github.com/gruntwork-io/terragrunt@v0.21.10
+RUN export GO111MODULE=on && \
+    go get github.com/hashicorp/terraform@v0.12.18
 
 RUN cd /root/ \
     && curl -O https://cache.agilebits.com/dist/1P/op/pkg/v0.8.0/op_linux_amd64_v0.8.0.zip \
     && unzip op_linux_amd64_v0.8.0.zip
+
+RUN cd /root/ && \
+    curl -LO https://github.com/sl1pm4t/k2tf/releases/download/v0.3.0/k2tf_0.3.0_Linux_x86_64.tar.gz && \
+    tar xvf k2tf_0.3.0_Linux_x86_64.tar.gz
+
+RUN cd /root/ && \
+    mkdir helm && \
+    cd helm && \
+    curl -LO https://get.helm.sh/helm-v2.16.3-linux-amd64.tar.gz && \
+    tar xvf helm-v2.16.3-linux-amd64.tar.gz
+
+RUN cd /root/ && \
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl
 
 RUN cd /root/ \
     && mkdir providers \
@@ -50,6 +67,10 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh
 RUN mkdir -p /go/bin /workspace /root/.ssh/ /root/.terraform.d/plugins/linux_amd64
 COPY --from=builder /root/go/bin/* /root/go/bin/
 COPY --from=builder /root/op /usr/local/bin/
+COPY --from=builder /root/k2tf /usr/local/bin/
+COPY --from=builder /root/helm/linux-amd64/helm /usr/local/bin/
+COPY --from=builder /root/helm/linux-amd64/tiller /usr/local/bin/
+COPY --from=builder /root/kubectl /usr/local/bin/
 COPY --from=builder /root/providers/* /root/.terraform.d/plugins/linux_amd64/
 
 WORKDIR /workspace
@@ -60,6 +81,7 @@ RUN pip3 install -r requirements.txt && rm requirements.txt
 
 COPY workspace.zsh-theme /root/.oh-my-zsh/themes/
 COPY zshrc /root/.zshrc
+COPY vimrc /root/.vimrc
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
