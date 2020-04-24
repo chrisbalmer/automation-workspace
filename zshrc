@@ -16,9 +16,10 @@ unsetopt share_history
 
 export GOPATH=/root/go
 export PATH=$PATH:$GOPATH/bin
-export GO111MODULE=on
+#export GO111MODULE=on
 
 alias vi=vim
+alias k=kubectl
 
 ssh-add -l &>/dev/null
 if [[ "$?" == 2 ]]; then
