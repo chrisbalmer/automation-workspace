@@ -13,6 +13,13 @@ RUN export GO111MODULE=on && \
 RUN export GO111MODULE=on && \
     go get github.com/hashicorp/terraform@v0.12.24
 
+RUN mkdir /go/src/panos-commit
+COPY go/panos-commit.go /go/src/panos-commit/
+RUN go get github.com/PaloAltoNetworks/pango && \
+    cd /go/src/panos-commit && \
+    go build panos-commit.go && \
+    mv /go/src/panos-commit/panos-commit /go/bin/
+
 
 
 FROM centos:7.7.1908 AS builder
@@ -65,6 +72,15 @@ RUN cd providers && \
 
 ##############################################################################
 #### terraform provider
+#### Ansible
+##############################################################################
+RUN cd providers && \
+    curl -LO https://github.com/nbering/terraform-provider-ansible/releases/download/v1.0.3/terraform-provider-ansible-linux_amd64.zip && \
+    unzip terraform-provider-ansible-linux_amd64.zip && \
+    rm terraform-provider-ansible-linux_amd64.zip
+
+##############################################################################
+#### terraform provider
 #### RKE
 ##############################################################################
 RUN cd providers && \
@@ -89,6 +105,7 @@ RUN yum -y update && \
            python3-devel \
            krb5-devel \
            krb5-workstation \
+           make \
            openssl-devel \
            unzip \
            iputils \
