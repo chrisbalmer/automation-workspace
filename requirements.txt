@@ -1,5 +1,5 @@
 wheel
-ansible==2.10.0
+ansible==4.2.0
 pywinrm==0.3.0
 pykerberos==1.2.1
 requests_kerberos==0.12.0
